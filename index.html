@@ -1142,7 +1142,7 @@ body.tut-offset .modal { max-height: calc(100vh - var(--tut-offset, 120px) - 8px
   .print-header .print-left { text-align: left; font-size: 10pt; color: #555; }
 }
 .print-header { display: none; }
-/* ===== حجب التطبيق على الهاتف المحمول ===== */
+/* ===== حجب التطبيق على الهاتف والتابلت ===== */
 #phone-block { display: none; }
 html.phone-blocked body > *:not(#phone-block) { display: none !important; }
 html.phone-blocked #phone-block {
@@ -1156,15 +1156,24 @@ html.phone-blocked #phone-block {
 #phone-block p { margin: 0; font-size: 1rem; line-height: 1.9; }
 </style>
 <script>
-// هذا البرنامج مخصص للكمبيوتر واللابتوب: يُحجب على الهاتف المحمول (الجهاز اللوحي لا يُحجب)
+// هذا البرنامج مخصص للكمبيوتر واللابتوب: يُحجب على الهاتف المحمول والجهاز اللوحي (التابلت)
+function __isBlockedDevice(e) {
+  var ua = e.ua || '';
+  var phoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(ua);
+  var tabletUA = /iPad|Android|Tablet|Kindle|Silk|PlayBook/i.test(ua);              // أندرويد بدون Mobile = تابلت
+  var ipadDesktop = e.platform === 'MacIntel' && e.touchPoints > 1;                 // iPad بوضع "نسخة سطح المكتب"
+  var androidDesktop = e.touchPoints > 0 && /^Linux (arm|aarch)/i.test(e.platform || ''); // أندرويد بوضع سطح المكتب
+  var smallTouch = e.touchPoints > 0 && e.screenMin < 600;                           // هاتف بأي وضع
+  return !!(phoneUA || tabletUA || e.uaMobile || ipadDesktop || androidDesktop || smallTouch);
+}
 (function () {
   try {
-    var ua = navigator.userAgent || '';
-    var phoneUA = /iPhone|iPod|Android.*Mobile|Windows Phone|IEMobile|BlackBerry|Opera Mini/i.test(ua);
-    var uaMobile = !!(navigator.userAgentData && navigator.userAgentData.mobile);
-    var touch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0);
-    var smallScreen = Math.min(screen.width || 9999, screen.height || 9999) < 600; // يشمل طلب "نسخة سطح المكتب" على الهاتف
-    if (phoneUA || uaMobile || (touch && smallScreen)) {
+    var touchPoints = navigator.maxTouchPoints || (('ontouchstart' in window) ? 1 : 0);
+    if (__isBlockedDevice({
+      ua: navigator.userAgent, platform: navigator.platform, touchPoints: touchPoints,
+      uaMobile: !!(navigator.userAgentData && navigator.userAgentData.mobile),
+      screenMin: Math.min(screen.width || 9999, screen.height || 9999)
+    })) {
       window.__PHONE_BLOCKED = true;
       document.documentElement.classList.add('phone-blocked');
     }
@@ -1174,12 +1183,12 @@ html.phone-blocked #phone-block {
 </head>
 <body>
 
-<!-- ===== رسالة حجب الهاتف المحمول ===== -->
+<!-- ===== رسالة حجب الهاتف والتابلت ===== -->
 <div id="phone-block">
   <div class="pb-card">
     <div class="pb-icon">💻</div>
     <h2>هذا البرنامج للكمبيوتر فقط</h2>
-    <p>لا يعمل على الهاتف المحمول.<br>يرجى فتح الرابط من <strong>الكمبيوتر</strong> أو <strong>اللابتوب</strong> لاستخدامه.</p>
+    <p>لا يعمل على الهاتف المحمول ولا على الجهاز اللوحي (التابلت).<br>يرجى فتح الرابط من <strong>الكمبيوتر</strong> أو <strong>اللابتوب</strong> لاستخدامه.</p>
   </div>
 </div>
 
@@ -1190,7 +1199,7 @@ html.phone-blocked #phone-block {
   <div class="modal" style="max-width:420px;text-align:center;">
     <h2 style="margin-bottom:8px;">مرحباً بك في إدارة المهام اليومية</h2>
     <div style="text-align:right;font-size:0.9rem;line-height:1.8;margin:16px 0;background:var(--bg);padding:14px 16px;border-radius:10px;border:1.5px solid var(--border);">
-      <p style="margin:0 0 8px;">💻 مخصص للعمل على الكمبيوتر أو اللابتوب، ولا يعمل على الهاتف المحمول</p>
+      <p style="margin:0 0 8px;">💻 مخصص للعمل على الكمبيوتر أو اللابتوب، ولا يعمل على الموبايل أو التابلت</p>
       <p style="margin:0 0 8px;">💾 البيانات تُحفظ في ذاكرة المتصفح تلقائياً</p>
       <p style="margin:0 0 8px;">⚠️ مسح بيانات المتصفح أو استخدام التصفح الخفي سيؤدي لفقدان البيانات</p>
       <p style="margin:0;">📤 يمكنك تصدير واستيراد بياناتك من الإعدادات كملف Excel</p>
@@ -5240,7 +5249,7 @@ document.addEventListener('keydown', function(e) {
   }
 });
 
-// بدء التطبيق (لا يبدأ على الهاتف المحمول)
+// بدء التطبيق (لا يبدأ على الهاتف أو التابلت)
 if (!window.__PHONE_BLOCKED) App.init();
 
 })();
