@@ -1475,7 +1475,7 @@ body.tut-offset .modal { max-height: calc(100vh - var(--tut-offset, 120px) - 8px
     <p id="task-sub-hint" style="display:none;margin:0 0 12px;padding:8px 10px;background:var(--primary-light);border-radius:8px;font-size:0.82rem;line-height:1.7;">💡 المهمة الفرعية تُنفَّذ أثناء مهمة رئيسية. أمثلة: قراءة الأذكار أو القرآن أثناء المواصلات للعمل، أو سماع درس أثناء المهام المنزلية.</p>
     <div class="form-group">
       <label>اسم المهمة</label>
-      <input type="text" id="task-name" placeholder="مثال: شغل + قرآن">
+      <input type="text" id="task-name" placeholder="مثال: العمل، المذاكرة، الغداء، الرياضة">
     </div>
     <div class="form-group">
       <label>المجموعة</label>
@@ -3291,6 +3291,10 @@ var Tasks = {
       document.getElementById('task-name').value = '';
     }
     document.getElementById('task-sub-hint').style.display = (!taskId && Gantt._applyKind === 'sub') ? '' : 'none';
+    // أمثلة واقعية في الحقل: مجموعة للمهام الرئيسية وأخرى للفرعية
+    document.getElementById('task-name').placeholder = (!taskId && Gantt._applyKind === 'sub')
+      ? 'مثال: أذكار الصباح، سماع القرآن، سماع بودكاست'
+      : 'مثال: العمل، المذاكرة، الغداء، الرياضة';
     GroupPicker.refresh('task-group');
     modal.classList.add('active');
   },
