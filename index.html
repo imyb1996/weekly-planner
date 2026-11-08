@@ -3384,6 +3384,11 @@ var Tasks = {
       title.textContent = Gantt._applyKind === 'sub' ? 'إضافة مهمة فرعية' : 'إضافة مهمة رئيسية';
       document.getElementById('task-edit-id').value = '';
       document.getElementById('task-name').value = '';
+      // المجموعة الافتراضية: آخر مجموعة استُخدمت لهذا النوع (رئيسية/فرعية)
+      var lastGid = State.settings[Gantt._applyKind === 'sub' ? 'lastGroupSub' : 'lastGroupMain'];
+      if (lastGid && State.groups.some(function(g) { return String(g.id) === String(lastGid); })) {
+        groupSelect.value = String(lastGid);
+      }
     }
     document.getElementById('task-sub-hint').style.display = (!taskId && Gantt._applyKind === 'sub') ? '' : 'none';
     // أمثلة واقعية في الحقل: مجموعة للمهام الرئيسية وأخرى للفرعية
@@ -3416,6 +3421,8 @@ var Tasks = {
     } else {
       taskData.id = Utils.generateId();
       State.tasks.push(taskData);
+      // تذكّر آخر مجموعة لهذا النوع لتكون الافتراضية في المرة القادمة
+      if (groupId) State.settings[Gantt._applyKind === 'sub' ? 'lastGroupSub' : 'lastGroupMain'] = String(groupId);
     }
     Tasks.hideForm();
     try { DB.save(); } catch(e) {}
