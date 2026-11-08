@@ -2340,10 +2340,11 @@ var BrowserName = {
       else localStorage.setItem(BrowserName.KEY, v);
     } catch(e) {}
   },
-  // اسم ملف النسخة الاحتياطية: 2026-11-8-21_بيانات إدارة المهام_متصفح بابا.xlsx
+  // اسم ملف النسخة الاحتياطية: 2026-11-8-21-35_بيانات إدارة المهام_متصفح بابا.xlsx (السنة-الشهر-اليوم-الساعة-الدقائق)
   backupFileName: function() {
     var d = new Date();
-    var stamp = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + '-' + d.getHours();
+    var mm = d.getMinutes();
+    var stamp = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + '-' + d.getHours() + '-' + (mm < 10 ? '0' + mm : mm);
     var name = BrowserName.get().replace(/[\\\/:*?"<>|\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim() || 'المستخدم';
     return stamp + '_بيانات إدارة المهام_متصفح ' + name + '.xlsx';
   },
