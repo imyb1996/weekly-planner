@@ -620,6 +620,11 @@ button { cursor: pointer; border: none; background: none; }
   padding: 24px 20px;
   animation: slideUp 0.3s ease;
 }
+/* لون شاشة إضافة المهمة: أزرق خفيف للرئيسية وأخضر خفيف للفرعية */
+.modal.kind-main { background: #eff6ff; border-top: 4px solid #93c5fd; }
+.modal.kind-sub { background: #f0fdf4; border-top: 4px solid #86efac; }
+.modal.kind-main .modal-close, .modal.kind-sub .modal-close { background: rgba(255,255,255,0.75); }
+#task-sub-hint { background: #dcfce7 !important; }
 @keyframes slideUp {
   from { transform: translateY(100%); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
@@ -1519,7 +1524,7 @@ function __isBlockedDevice(e) {
 
 <!-- ===== Modal: نموذج المهمة ===== -->
 <div class="modal-overlay" id="task-modal">
-  <div class="modal">
+  <div class="modal" id="task-modal-box">
     <div class="modal-header">
       <h3 id="task-modal-title">إضافة مهمة</h3>
       <button class="modal-close" onclick="Tasks.hideForm()">✕</button>
@@ -3385,6 +3390,10 @@ var Tasks = {
     document.getElementById('task-name').placeholder = (!taskId && Gantt._applyKind === 'sub')
       ? 'مثال: أذكار الصباح، سماع القرآن، سماع بودكاست'
       : 'مثال: العمل، المذاكرة، الغداء، الرياضة';
+    // لون الشاشة: أزرق للرئيسية، أخضر للفرعية، وبدون لون عند التعديل
+    var box = document.getElementById('task-modal-box');
+    box.classList.remove('kind-main', 'kind-sub');
+    if (!taskId) box.classList.add(Gantt._applyKind === 'sub' ? 'kind-sub' : 'kind-main');
     GroupPicker.refresh('task-group');
     modal.classList.add('active');
   },
