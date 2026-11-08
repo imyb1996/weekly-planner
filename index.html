@@ -1454,6 +1454,13 @@ function __isBlockedDevice(e) {
           <select id="setting-pin-hour" onchange="Settings.onPinHourChange(this.value)" style="font-size:0.85rem;padding:4px 8px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);display:none;"></select>
         </div>
       </div>
+      <div class="setting-item">
+        <div class="setting-label">
+          <h3>اسم المتصفح</h3>
+          <p>يظهر في اسم ملف النسخة الاحتياطية، والافتراضي اسم المستخدم الأول (اتركه فارغاً للعودة إليه)</p>
+        </div>
+        <input type="text" id="setting-browser-name" maxlength="40" onchange="BrowserName.onInput(this)" style="font-size:0.9rem;padding:6px 10px;border-radius:6px;border:1.5px solid var(--border);background:var(--surface);width:160px;font-family:inherit;">
+      </div>
       <div class="setting-item" style="border-color: var(--success);">
         <div class="setting-label">
           <h3 style="color: var(--success);">تصدير البيانات</h3>
@@ -2305,6 +2312,43 @@ var DB = {
   }
 };
 
+// ===== اسم المتصفح (محفوظ في هذا المتصفح فقط، ويظهر في اسم ملف النسخة الاحتياطية) =====
+var BrowserName = {
+  KEY: 'mytasks_browser_name',
+  // الاسم التلقائي = اسم المستخدم الأول
+  auto: function() {
+    var u = State.users && State.users[0];
+    var n = u ? String(u.name || '').trim() : '';
+    return n || 'المستخدم';
+  },
+  // الاسم الفعلي: ما حفظه المستخدم، وإلا اسم المستخدم الأول
+  get: function() {
+    var saved = '';
+    try { saved = String(localStorage.getItem(BrowserName.KEY) || '').trim(); } catch(e) {}
+    return saved || BrowserName.auto();
+  },
+  // حفظ الاسم؛ الفارغ أو المطابق للتلقائي يُبقي الوضع تلقائياً
+  set: function(val) {
+    var v = String(val || '').trim();
+    try {
+      if (!v || v === BrowserName.auto()) localStorage.removeItem(BrowserName.KEY);
+      else localStorage.setItem(BrowserName.KEY, v);
+    } catch(e) {}
+  },
+  // اسم ملف النسخة الاحتياطية: 2026-11-8-21_بيانات إدارة المهام_متصفح بابا.xlsx
+  backupFileName: function() {
+    var d = new Date();
+    var stamp = d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate() + '-' + d.getHours();
+    var name = BrowserName.get().replace(/[\\\/:*?"<>|\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim() || 'المستخدم';
+    return stamp + '_بيانات إدارة المهام_متصفح ' + name + '.xlsx';
+  },
+  onInput: function(el) {
+    BrowserName.set(el.value);
+    el.value = BrowserName.get();
+    UI.toast('تم حفظ اسم المتصفح', 'success');
+  }
+};
+
 // ===== تصدير/استيراد Excel (نسخ احتياطي) =====
 var ExcelIO = {
   exportBackup: function() {
@@ -2312,7 +2356,7 @@ var ExcelIO = {
     var blob = new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = 'إدارة_المهام_نسخة_' + new Date().toISOString().slice(0,10) + '.xlsx';
+    a.download = BrowserName.backupFileName();
     a.click();
     URL.revokeObjectURL(a.href);
     UI.toast('تم تنزيل النسخة الاحتياطية', 'success');
@@ -3978,6 +4022,7 @@ var Settings = {
     document.getElementById('setting-calendar').value = s.calendarSystem || 'hijri';
     document.getElementById('setting-font').value = (s.fontFamily === 'Cairo' || s.fontFamily === 'Tajawal') ? s.fontFamily : 'default';
     Settings._syncBarFontLabel();
+    document.getElementById('setting-browser-name').value = BrowserName.get();
     var sunriseEl = document.getElementById('setting-sunrise');
     sunriseEl.classList.toggle('active', s.showSunrise !== 'false');
     Settings._syncPinStartUI();
@@ -4196,6 +4241,7 @@ window.Utils = Utils;
 window.DB = DB;
 window.DataIO = DataIO;
 window.ExcelIO = ExcelIO;
+window.BrowserName = BrowserName;
 window.UI = UI;
 window.Gantt = Gantt;
 window.Tasks = Tasks;
